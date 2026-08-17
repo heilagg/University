@@ -1,25 +1,59 @@
-# Учёба
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-Учебные и практические работы, выполненные во время обучения на специальности «Информационные системы» (KBTU). Собраны в один репозиторий, чтобы не засорять профиль десятком мелких репо — здесь всё разложено по темам.
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-Это не портфолио-проекты (для них см. отдельные репозитории — например, `kitchen_ai_manager` и `Roomly`), а учебная практика: лабораторные, задания курсов, упражнения.
+## About Laravel
 
-## Структура
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-### `web-laravel/` — практика на PHP/Laravel
-Серия учебных заданий по фреймворку Laravel, от простого к сложному:
-- `01-profile-intro/` — первое знакомство с Laravel: контроллер, отображающий простую страницу профиля
-- `05-assignment/`, `06-assignment/`, `07-assignment/` — последовательные учебные задания курса
-- `08-authors-crud/` — самое законченное задание: CRUD-форма с валидацией на модели `Author` (create/store с проверкой полей)
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-### `frontend-labs/` — практика по вёрстке
-- `lab1-khanacademy/` — упражнения по курсу Khan Academy
-- `lab2-clone-layouts/` — вёрстка-клон интерфейсов (Facebook, Microsoft, Instagram) для практики HTML/CSS
-- `lab3/` — самостоятельная работа с HTML/CSS/JS
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-### `cpp-labs/` — практика по C++
-Лабораторные работы (`lab7`–`lab12`) курса программирования: файлы задач `a.cpp`–`o.cpp` в каждой лабе.
+## Learning Laravel
 
-## Примечание
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
-Из исходных репозиториев при объединении убраны: случайно закоммиченные зависимости (`vendor/`, `node_modules/`), скомпилированные бинарники (`*.exe`), системные файлы (`.DS_Store`) и несколько пустых/дублирующих черновиков одного и того же задания.
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+
+## Laravel Sponsors
+
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+
+### Premium Partners
+
+- **[Vehikl](https://vehikl.com)**
+- **[Tighten Co.](https://tighten.co)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Redberry](https://redberry.international/laravel-development)**
+- **[Active Logic](https://activelogic.com)**
+
+## Contributing
+
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+
+## Code of Conduct
+
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+
+## Security Vulnerabilities
+
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+
+## License
+
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
