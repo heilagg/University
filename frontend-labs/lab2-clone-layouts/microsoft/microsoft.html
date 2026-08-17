@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Microsoft - Официальный сайт</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 50px;
+            background: #f2f2f2;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .hero {
+            background: #e6e6e6;
+            padding: 80px 50px;
+            text-align: center;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 50px;
+        }
+
+        .product-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .shop-btn {
+            background: #0067b8;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            margin: 10px 0;
+        }
+
+        .developer-direct {
+            background: black;
+            color: white;
+            padding: 50px;
+            text-align: center;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-links">
+            <a href="#">Microsoft</a>
+            <a href="#">Teams</a>
+            <a href="#">Surface</a>
+        </div>
+        <div class="nav-links">
+            <a href="#">Корзина</a>
+            <a href="#">Войти</a>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>Surface Pro</h1>
+        <p>Обновленный с новыми функциями ИИ</p>
+        <button class="shop-btn">Купить сейчас</button>
+    </div>
+
+    <div class="products">
+        <div class="product-card">
+            <img src="placeholder.jpg" alt="Copilot+PC">
+            <h3>Copilot+PC</h3>
+            <p>Современные функции ИИ</p>
+            <button class="shop-btn">Подробнее</button>
+        </div>
+
+        <div class="product-card">
+            <img src="placeholder.jpg" alt="Xbox Series S">
+            <h3>Xbox Series S</h3>
+            <p>Мощь нового поколения</p>
+            <button class="shop-btn">Купить</button>
+        </div>
+    </div>
+
+    <div class="developer-direct">
+        <h2>Developer_Direct</h2>
+        <p>Новости прямо от разработчиков</p>
+        <button class="shop-btn">Узнать больше</button>
+    </div>
+
+    <footer style="padding: 50px; background: #f2f2f2;">
+        <h3>Полезные ссылки:</h3>
+        <ul>
+            <li><a href="https://roadmap.sh/">Roadmap.sh</a></li>
+            <li><a href="https://www.w3schools.com/html/">W3Schools HTML</a></li>
+        </ul>
+    </footer>
+</body>
+</html>
