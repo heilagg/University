@@ -1,0 +1,112 @@
+# GitLab CI/CD Pipeline Template
+# This template provides a standard CI/CD pipeline for ML projects
+
+stages:
+  - build
+  - test
+  - package
+  - deploy-dev
+  - deploy-staging
+  - deploy-prod
+
+variables:
+  DOCKER_REGISTRY: "nexus.ci-cd.svc.cluster.local:5000"
+  MLFLOW_TRACKING_URI: "http://mlflow.dev-platform.svc.cluster.local:5000"
+  NEXUS_URL: "http://nexus.ci-cd.svc.cluster.local:8081"
+
+# Build stage
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u $NEXUS_USER -p $NEXUS_PASSWORD $DOCKER_REGISTRY
+  script:
+    - docker build -t $DOCKER_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA .
+    - docker push $DOCKER_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Test stage
+test:
+  stage: test
+  image: python:3.9
+  before_script:
+    - pip install -r requirements.txt
+    - pip install pytest pytest-cov
+  script:
+    - pytest tests/ --cov=src --cov-report=xml
+    - coverage report --fail-under=80
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Package stage - Create MLflow model package
+package:
+  stage: package
+  image: python:3.9
+  before_script:
+    - pip install mlflow
+    - export MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI
+  script:
+    - mlflow models build-docker -n $CI_PROJECT_NAME:$CI_COMMIT_SHA -m "runs:/$CI_COMMIT_SHA/model"
+    - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHA $DOCKER_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA
+    - docker push $DOCKER_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA
+  only:
+    - main
+    - develop
+
+# Deploy to development
+deploy-dev:
+  stage: deploy-dev
+  image: bitnami/kubectl:latest
+  script:
+    - kubectl set image deployment/$CI_PROJECT_NAME $CI_PROJECT_NAME=$DOCKER_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA -n dev-platform
+    - kubectl rollout status deployment/$CI_PROJECT_NAME -n dev-platform
+  environment:
+    name: development
+    url: http://$CI_PROJECT_NAME.dev-platform.svc.cluster.local
+  only:
+    - develop
+
+# Deploy to staging
+deploy-staging:
+  stage: deploy-staging
+  image: bitnami/kubectl:latest
+  script:
+    - kubectl set image deployment/$CI_PROJECT_NAME $CI_PROJECT_NAME=$DOCKER_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA -n staging
+    - kubectl rollout status deployment/$CI_PROJECT_NAME -n staging
+  environment:
+    name: staging
+    url: http://$CI_PROJECT_NAME.staging.svc.cluster.local
+  only:
+    - main
+  when: manual
+
+# Deploy to production
+deploy-prod:
+  stage: deploy-prod
+  image: bitnami/kubectl:latest
+  script:
+    - kubectl set image deployment/$CI_PROJECT_NAME $CI_PROJECT_NAME=$DOCKER_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA -n production
+    - kubectl rollout status deployment/$CI_PROJECT_NAME -n production
+  environment:
+    name: production
+    url: http://$CI_PROJECT_NAME.production.svc.cluster.local
+  only:
+    - main
+  when: manual
+  only:
+    variables:
+      - $DEPLOY_PRODUCTION == "true"
+

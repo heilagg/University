@@ -1,0 +1,292 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airflow-config
+  namespace: dev-platform
+data:
+  airflow.cfg: |
+    [core]
+    executor = KubernetesExecutor
+    dags_folder = /opt/airflow/dags
+    load_examples = False
+    sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@airflow-db.dev-platform.svc.cluster.local:5432/airflow
+    
+    [webserver]
+    base_url = http://airflow.platform.local
+    web_server_port = 8080
+    authenticate = True
+    auth_backend = airflow.contrib.auth.backends.keycloak_auth
+    
+    [scheduler]
+    job_heartbeat_sec = 5
+    scheduler_heartbeat_sec = 5
+    
+    [kubernetes]
+    namespace = dev-platform
+    airflow_configmap = airflow-config
+    worker_container_repository = apache/airflow
+    worker_container_tag = latest
+    delete_worker_pods = True
+    airflow_local_settings_configmap = airflow-local-settings
+    
+    [logging]
+    remote_logging = True
+    remote_log_conn_id = s3_logs
+    remote_base_log_folder = s3://airflow-logs
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-webserver
+  namespace: dev-platform
+  labels:
+    app: airflow
+    component: webserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow
+      component: webserver
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: webserver
+    spec:
+      serviceAccountName: airflow
+      containers:
+      - name: webserver
+        image: apache/airflow:latest
+        command:
+          - airflow
+          - webserver
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: AIRFLOW__CORE__EXECUTOR
+          value: KubernetesExecutor
+        - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+          value: postgresql+psycopg2://airflow:airflow@airflow-db.dev-platform.svc.cluster.local:5432/airflow
+        - name: AIRFLOW__WEBSERVER__AUTHENTICATE
+          value: "True"
+        volumeMounts:
+        - name: airflow-config
+          mountPath: /opt/airflow/airflow.cfg
+          subPath: airflow.cfg
+        - name: airflow-dags
+          mountPath: /opt/airflow/dags
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+      volumes:
+      - name: airflow-config
+        configMap:
+          name: airflow-config
+      - name: airflow-dags
+        persistentVolumeClaim:
+          claimName: airflow-dags-pvc
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-scheduler
+  namespace: dev-platform
+  labels:
+    app: airflow
+    component: scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow
+      component: scheduler
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: scheduler
+    spec:
+      serviceAccountName: airflow
+      containers:
+      - name: scheduler
+        image: apache/airflow:latest
+        command:
+          - airflow
+          - scheduler
+        env:
+        - name: AIRFLOW__CORE__EXECUTOR
+          value: KubernetesExecutor
+        - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+          value: postgresql+psycopg2://airflow:airflow@airflow-db.dev-platform.svc.cluster.local:5432/airflow
+        volumeMounts:
+        - name: airflow-config
+          mountPath: /opt/airflow/airflow.cfg
+          subPath: airflow.cfg
+        - name: airflow-dags
+          mountPath: /opt/airflow/dags
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+      volumes:
+      - name: airflow-config
+        configMap:
+          name: airflow-config
+      - name: airflow-dags
+        persistentVolumeClaim:
+          claimName: airflow-dags-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-webserver
+  namespace: dev-platform
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: airflow
+    component: webserver
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-db
+  namespace: dev-platform
+  labels:
+    app: airflow-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow-db
+  template:
+    metadata:
+      labels:
+        app: airflow-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        env:
+        - name: POSTGRES_DB
+          value: airflow
+        - name: POSTGRES_USER
+          value: airflow
+        - name: POSTGRES_PASSWORD
+          value: airflow
+        ports:
+        - containerPort: 5432
+          name: postgres
+        volumeMounts:
+        - name: airflow-db-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: airflow-db-storage
+        persistentVolumeClaim:
+          claimName: airflow-db-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-db
+  namespace: dev-platform
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: airflow-db
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-dags-pvc
+  namespace: dev-platform
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: glusterfs
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-db-pvc
+  namespace: dev-platform
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: glusterfs
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airflow
+  namespace: dev-platform
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airflow
+  namespace: dev-platform
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airflow
+  namespace: dev-platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airflow
+subjects:
+- kind: ServiceAccount
+  name: airflow
+  namespace: dev-platform
+

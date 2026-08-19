@@ -1,0 +1,18 @@
+{
+  "project_name": "my-ml-project",
+  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '-').replace('_', '-') }}",
+  "author_name": "Data Science Team",
+  "description": "Machine Learning project template",
+  "python_version": "3.9",
+  "mlflow_tracking_uri": "http://mlflow.dev-platform.svc.cluster.local:5000",
+  "dvc_remote": "s3",
+  "dvc_remote_url": "s3://dvc-storage",
+  "gitlab_url": "http://gitlab.platform.local",
+  "github_org": "",
+  "use_docker": "yes",
+  "use_kubernetes": "yes",
+  "use_mlflow": "yes",
+  "use_dvc": "yes",
+  "use_airflow": "yes"
+}
+

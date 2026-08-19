@@ -1,0 +1,13 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: glusterfs
+provisioner: kubernetes.io/glusterfs
+parameters:
+  resturl: "http://glusterfs-service.storage.svc.cluster.local:8080"
+  restuser: "admin"
+  secretNamespace: "storage"
+  secretName: "glusterfs-secret"
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+

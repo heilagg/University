@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: glusterfs
+  namespace: storage
+  labels:
+    app: glusterfs
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: glusterfs
+  template:
+    metadata:
+      labels:
+        app: glusterfs
+    spec:
+      containers:
+      - name: glusterfs
+        image: gluster/gluster-centos:latest
+        ports:
+        - containerPort: 24007
+        - containerPort: 24008
+        - containerPort: 49152
+        - containerPort: 8080
+        volumeMounts:
+        - name: glusterfs-data
+          mountPath: /var/lib/glusterfs
+        - name: glusterfs-config
+          mountPath: /etc/glusterfs
+        securityContext:
+          capabilities:
+            add:
+            - SYS_ADMIN
+          privileged: true
+      volumes:
+      - name: glusterfs-data
+        hostPath:
+          path: /var/lib/glusterfs
+          type: DirectoryOrCreate
+      - name: glusterfs-config
+        hostPath:
+          path: /etc/glusterfs
+          type: DirectoryOrCreate
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: glusterfs-service
+  namespace: storage
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: rest
+  - port: 24007
+    targetPort: 24007
+    protocol: TCP
+    name: glusterd
+  selector:
+    app: glusterfs
+

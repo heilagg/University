@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus
+  namespace: ci-cd
+  labels:
+    app: nexus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus
+  template:
+    metadata:
+      labels:
+        app: nexus
+    spec:
+      containers:
+      - name: nexus
+        image: sonatype/nexus3:latest
+        ports:
+        - containerPort: 8081
+          name: http
+        - containerPort: 5000
+          name: docker
+        env:
+        - name: NEXUS_SECURITY_RANDOMPASSWORD
+          value: "false"
+        - name: NEXUS_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nexus-secret
+              key: admin-password
+        volumeMounts:
+        - name: nexus-data
+          mountPath: /nexus-data
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+      volumes:
+      - name: nexus-data
+        persistentVolumeClaim:
+          claimName: nexus-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus
+  namespace: ci-cd
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8081
+    targetPort: 8081
+    protocol: TCP
+    name: http
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+    name: docker
+  selector:
+    app: nexus
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nexus-pvc
+  namespace: ci-cd
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: glusterfs
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nexus-secret
+  namespace: ci-cd
+type: Opaque
+stringData:
+  admin-password: admin123
+

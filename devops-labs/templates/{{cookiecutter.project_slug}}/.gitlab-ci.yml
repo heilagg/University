@@ -1,0 +1,7 @@
+include:
+  - project: 'dev-platform/pipelines'
+    file: '/gitlab-ci-template.yml'
+
+variables:
+  PROJECT_NAME: {{ cookiecutter.project_slug }}
+
